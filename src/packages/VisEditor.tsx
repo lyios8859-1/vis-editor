@@ -21,6 +21,7 @@ import Editor from "./content-center/Editor";
 import Preview from "./preview/Preview";
 
 import "./viseditor.scss";
+import { createNewShape } from "./VisEditor.utils";
 
 export default defineComponent({
   name: "VisEditor",
@@ -32,13 +33,13 @@ export default defineComponent({
     },
     // 左侧菜单的列表配置
     config: {
-      type: Array,
-      default: () => [],
+      type: Object,
+      default: () => {},
     },
   },
-  emits: ["changeValue"],
+  emits: ["changeValue", "save"],
   setup(props, { emit }) {
-    const dataModel = useModel(
+    const dataModel = useModel<any>(
       () => props.data,
       (val: any) => emit("changeValue", val)
     );
@@ -51,29 +52,79 @@ export default defineComponent({
     // 编辑状态
     const isEditing = computed(() => state.editing && !state.preview);
 
+    // 选中和未选中
+    const focusData = computed(() => {
+      const focus: any[] = [];
+      const unFocus: any[] = [];
+      (dataModel.value || []).forEach((shape: any) =>
+        (shape.focus ? focus : unFocus).push(shape)
+      );
+      return {
+        unFocus, // 未选中的数据
+        focus,
+      };
+    });
+
     const methods = {
+      updateShapes: (shape?: any) => {
+        if (shape) {
+          // 更新数据
+          const oldShapes = [...(dataModel.value || [])];
+          const newShapes = [...oldShapes, shape];
+          dataModel.value = deepcopy(newShapes);
+        } else {
+          // 清空数据
+          dataModel.value = [];
+        }
+      },
       drop: (index: string, params: any) => {
         if (!index) return;
         const idx = parseInt(index);
 
-        const component = props.config[idx];
+        const component = (props.config.menus as any[])[idx];
 
         console.log(params, deepcopy(component));
 
-        const blocks = [...(dataModel.value || [])];
-        // blocks.push(
-        //   createNewBlock({
-        //     component,
-        //     ...params,
-        //   })
-        // );
+        const shape = createNewShape({
+          component,
+          ...params,
+        });
+        // 向画布区域添加
+        methods.updateShapes(shape);
       },
 
       preview: () => {
         state.preview = !state.preview;
       },
+      save: () => {
+        const data = deepcopy(dataModel.value);
+        localStorage.setItem("canvasData", JSON.stringify(data));
+        emit("save", data);
+      },
+      clear: () => {
+        methods.updateShapes();
+        localStorage.setItem("canvasData", JSON.stringify([]));
+      },
       close: () => {
         state.editing = !state.editing;
+      },
+
+      mousemove: (e: MouseEvent) => {
+        // console.log("move");
+        let { clientX: moveX, clientY: moveY } = e;
+
+        console.log(moveX, moveY);
+
+        // console.log(focusData.value);
+        dataModel.value.forEach((shape: any, index: number) => {
+          shape.props.top = moveX;
+          shape.props.left = moveY;
+          console.log(index, shape);
+        });
+      },
+      mouseup: () => {
+        document.removeEventListener("mousemove", methods.mousemove);
+        document.removeEventListener("mouseup", methods.mouseup);
       },
     };
 
@@ -104,12 +155,11 @@ export default defineComponent({
           left,
         });
       },
-      mousedown: (e: DragEvent) => {
+      mousedown: (e: MouseEvent) => {
         e.stopPropagation();
-        // console.log("mouseDown");
-      },
-      mouseup: () => {
-        // console.log("mouseup");
+        console.log("mouseDown", e.target);
+        document.addEventListener("mousemove", methods.mousemove);
+        document.addEventListener("mouseup", methods.mouseup);
       },
     };
 
@@ -120,12 +170,17 @@ export default defineComponent({
         <Fragment>
           {state.editing ? (
             <div class="vis-editor__container">
-              <Toolbar onPreview={methods.preview} onClose={methods.close} />
+              <Toolbar
+                onPreview={methods.preview}
+                onClose={methods.close}
+                onSave={methods.save}
+                onClear={methods.clear}
+              />
 
               <main class="vis-editor">
                 {/* 左侧组件列表 */}
                 <section class="editor-left">
-                  <Menu data={props.config} />
+                  <Menu config={props.config} />
                 </section>
                 {/* 中间画布 */}
                 <section class="editor-center">
@@ -137,13 +192,16 @@ export default defineComponent({
                       { "is-preview": state.preview },
                     ]}
                     onDragover={handle.dragover}
-                    // onDragenter={handle.dragenter}
-                    // onDragleave={handle.dragleave}
+                    onDragenter={handle.dragenter}
+                    onDragleave={handle.dragleave}
                     onDrop={handle.drop}
-                    // onMousedown={handle.mousedown}
-                    // onMouseup={handle.mouseup}
+                    onMousedown={handle.mousedown}
                   >
-                    <Editor editing={isEditing.value} />
+                    <Editor
+                      editing={isEditing.value}
+                      shapes={dataModel.value}
+                      config={props.config}
+                    />
                   </div>
                 </section>
                 {/* 右侧属性列表 */}

@@ -1,16 +1,23 @@
 import { defineComponent, ref, watch } from "vue";
 
 import VisEditor from "./packages/VisEditor";
-import editorConf from "./packages/VisEditorConf";
+import viseditorConfig from "./packages/VisEditorConf";
 
 export default defineComponent({
   name: "App",
   setup() {
-    const menuDatas = ref(editorConf);
-    const canvasDatas = ref([]);
+    const menuDatas = ref(viseditorConfig);
 
-    const handleChange = (value: any) => {
-      console.log("value:", value);
+    const data = JSON.parse(localStorage.getItem("canvasData") || "[]");
+    const canvasDatas = ref(data || []);
+
+    const handle = {
+      change: (value: any) => {
+        console.log("change:", value);
+      },
+      save: (value: any) => {
+        console.log("save:", value);
+      },
     };
 
     return () => {
@@ -18,7 +25,8 @@ export default defineComponent({
         <VisEditor
           data={canvasDatas.value}
           config={menuDatas.value}
-          onChangeValue={handleChange}
+          onChangeValue={handle.change}
+          onSave={handle.save}
         />
       );
     };
