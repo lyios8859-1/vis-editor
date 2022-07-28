@@ -19,7 +19,7 @@ export default defineComponent({
     },
     config: {
       type: Object,
-      default: () => {},
+      default: () => ({}),
     },
   },
   setup(props) {
@@ -27,11 +27,6 @@ export default defineComponent({
       "editor",
       { editing: props.editing },
     ]);
-    const editorRef = ref({} as HTMLDivElement);
-    onMounted(() => {
-      const editor = editorRef.value.getBoundingClientRect();
-      console.log(editor);
-    });
 
     // 选中和未选中
     const focusData = computed(() => {
@@ -70,7 +65,6 @@ export default defineComponent({
       mouseup: () => {
         document.removeEventListener("mousemove", methods.mousemove);
         document.removeEventListener("mouseup", methods.mouseup);
-        console.log(focusData.value);
       },
     };
 
@@ -98,7 +92,6 @@ export default defineComponent({
           })),
         };
 
-        console.log("mouseDown", dragState);
         document.addEventListener("mousemove", methods.mousemove);
         document.addEventListener("mouseup", methods.mouseup);
       },
@@ -112,7 +105,6 @@ export default defineComponent({
             width: changeStyleWithScale(canvasStyleData.width) + "px",
             height: changeStyleWithScale(canvasStyleData.height) + "px",
           }}
-          ref={editorRef}
         >
           {props.shapes.map((shape: any, index) => (
             <Shape

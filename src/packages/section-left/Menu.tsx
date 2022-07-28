@@ -7,7 +7,7 @@ export default defineComponent({
   props: {
     config: {
       type: Object,
-      default: () => {},
+      default: () => ({}),
     },
   },
   setup(props) {

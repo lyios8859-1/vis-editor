@@ -34,7 +34,7 @@ export default defineComponent({
     // 左侧菜单的列表配置
     config: {
       type: Object,
-      default: () => {},
+      default: () => ({}),
     },
   },
   emits: ["changeValue", "save"],

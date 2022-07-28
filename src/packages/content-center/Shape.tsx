@@ -13,11 +13,11 @@ export default defineComponent({
     },
     shape: {
       type: Object,
-      default: () => {},
+      default: () => ({}),
     },
     config: {
       type: Object,
-      default: () => {},
+      default: () => ({}),
     },
   },
   setup(props) {
@@ -36,6 +36,8 @@ export default defineComponent({
       top: `${props.shape.props.top}px`,
       left: `${props.shape.props.left}px`,
       zIndex: props.shape.props.zIndex,
+      width: `${props.shape.props.width}px`,
+      height: `${props.shape.props.height}px`,
     }));
 
     onMounted(() => {
@@ -58,7 +60,7 @@ export default defineComponent({
           {render()}
 
           {/* 控制大小或旋转 */}
-          <RotateOrResize />
+          <RotateOrResize shape={props.shape} />
         </div>
       );
     };

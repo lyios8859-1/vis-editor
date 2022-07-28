@@ -6,8 +6,8 @@
     user-select: none;
     &::after {
       position: absolute;
-      top: 0;
-      left: 0;
+      top: -1px;
+      left: -1px;
       content: "";
       display: block;
       width: 100%;
