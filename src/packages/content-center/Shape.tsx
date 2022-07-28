@@ -1,5 +1,7 @@
 import { computed, defineComponent, onMounted, ref } from "vue";
 
+import RotateOrResize from "./RotateOrResize";
+
 import "./shape.scss";
 
 export default defineComponent({
@@ -39,14 +41,14 @@ export default defineComponent({
     onMounted(() => {
       const shape = props.shape;
       if (shape?.adjustPosition === true) {
-        const { offsetHeight, offsetWidth } = shapeRef.value;
+        const { width, height } = shapeRef.value.getBoundingClientRect();
         // 保证拖拽的位置在鼠标点位置, 调整位置上下左右居于鼠标居中
-        shape.props.left = shape.props.left - offsetWidth / 2;
-        shape.props.top = shape.props.top - offsetHeight / 2;
+        shape.props.left = shape.props.left - width / 2;
+        shape.props.top = shape.props.top - height / 2;
         shape.adjustPosition = false;
 
-        shape.props.width = offsetWidth;
-        shape.props.height = offsetHeight;
+        shape.props.width = width;
+        shape.props.height = height;
       }
     });
 
@@ -54,6 +56,9 @@ export default defineComponent({
       return (
         <div class={shapeClass.value} style={styles.value} ref={shapeRef}>
           {render()}
+
+          {/* 控制大小或旋转 */}
+          <RotateOrResize />
         </div>
       );
     };

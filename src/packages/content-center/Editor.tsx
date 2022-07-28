@@ -1,4 +1,4 @@
-import { computed, defineComponent, ref } from "vue";
+import { computed, defineComponent, onMounted, ref } from "vue";
 
 import { changeStyleWithScale, canvasStyleData } from "../../utils";
 
@@ -27,6 +27,11 @@ export default defineComponent({
       "editor",
       { editing: props.editing },
     ]);
+    const editorRef = ref({} as HTMLDivElement);
+    onMounted(() => {
+      const editor = editorRef.value.getBoundingClientRect();
+      console.log(editor);
+    });
 
     // 选中和未选中
     const focusData = computed(() => {
@@ -70,7 +75,7 @@ export default defineComponent({
     };
 
     const focusShapeHandler = {
-      onMousedown: (e: MouseEvent, shape: any, index: number) => {
+      onMousedown: (e: MouseEvent, shape: any) => {
         // 如果没有选中组件 在画布上点击时需要调用 e.preventDefault() 防止触发 drop 事件
         // TODO
         // if (!curComponent) {
@@ -107,15 +112,17 @@ export default defineComponent({
             width: changeStyleWithScale(canvasStyleData.width) + "px",
             height: changeStyleWithScale(canvasStyleData.height) + "px",
           }}
+          ref={editorRef}
         >
           {props.shapes.map((shape: any, index) => (
             <Shape
+              key={index}
               shape={shape}
               config={props.config}
               isActive={props.editing}
               {...{
                 onMousedown: (e: MouseEvent) =>
-                  focusShapeHandler.onMousedown(e, shape, index),
+                  focusShapeHandler.onMousedown(e, shape),
               }}
             />
           ))}

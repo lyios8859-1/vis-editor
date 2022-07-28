@@ -1,8 +1,8 @@
 import { divide, multiply } from "mathjs";
 
 export const canvasStyleData = {
-  width: 1200,
-  height: 740,
+  width: 700,
+  height: 600,
   scale: 100,
 };
 
