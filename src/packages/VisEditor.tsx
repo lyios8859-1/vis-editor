@@ -52,19 +52,6 @@ export default defineComponent({
     // 编辑状态
     const isEditing = computed(() => state.editing && !state.preview);
 
-    // 选中和未选中
-    const focusData = computed(() => {
-      const focus: any[] = [];
-      const unFocus: any[] = [];
-      (dataModel.value || []).forEach((shape: any) =>
-        (shape.focus ? focus : unFocus).push(shape)
-      );
-      return {
-        unFocus, // 未选中的数据
-        focus,
-      };
-    });
-
     const methods = {
       updateShapes: (shape?: any) => {
         if (shape) {
@@ -82,8 +69,6 @@ export default defineComponent({
         const idx = parseInt(index);
 
         const component = (props.config.menus as any[])[idx];
-
-        console.log(params, deepcopy(component));
 
         const shape = createNewShape({
           component,
@@ -107,24 +92,6 @@ export default defineComponent({
       },
       close: () => {
         state.editing = !state.editing;
-      },
-
-      mousemove: (e: MouseEvent) => {
-        // console.log("move");
-        let { clientX: moveX, clientY: moveY } = e;
-
-        console.log(moveX, moveY);
-
-        // console.log(focusData.value);
-        dataModel.value.forEach((shape: any, index: number) => {
-          shape.props.top = moveX;
-          shape.props.left = moveY;
-          console.log(index, shape);
-        });
-      },
-      mouseup: () => {
-        document.removeEventListener("mousemove", methods.mousemove);
-        document.removeEventListener("mouseup", methods.mouseup);
       },
     };
 
@@ -154,12 +121,6 @@ export default defineComponent({
           top,
           left,
         });
-      },
-      mousedown: (e: MouseEvent) => {
-        e.stopPropagation();
-        console.log("mouseDown", e.target);
-        document.addEventListener("mousemove", methods.mousemove);
-        document.addEventListener("mouseup", methods.mouseup);
       },
     };
 
@@ -195,7 +156,6 @@ export default defineComponent({
                     onDragenter={handle.dragenter}
                     onDragleave={handle.dragleave}
                     onDrop={handle.drop}
-                    onMousedown={handle.mousedown}
                   >
                     <Editor
                       editing={isEditing.value}
